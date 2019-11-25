@@ -41,7 +41,7 @@ shmemq_t *shmemq_create(char *name, size_t capacity, size_t element_size){
     rv->data = mmap(NULL, shmem_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
     if (!already_exists){
-        rv->data->references = 0;
+        rv->data->references = 1;
         rv->data->read_pos = 0;
         rv->data->write_pos = 0;
         pthread_mutexattr_t attr;
@@ -58,12 +58,13 @@ shmemq_t *shmemq_create(char *name, size_t capacity, size_t element_size){
 }
 
 void shmemq_destroy(shmemq_t *this){
-    munmap(this->data, this->total_size);
     close(this->fd);
 
     if (this->data->references == 1){
         shm_unlink(this->name);
     }
+
+    munmap(this->data, this->total_size);
 
     free(this->name);
     free(this);

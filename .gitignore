@@ -1,3 +1,4 @@
 shmemq
+shmemq-debug
 *.o
 *.swp
