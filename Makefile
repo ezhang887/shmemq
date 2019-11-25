@@ -1,8 +1,8 @@
 CC = gcc
 LD = gcc
 
-CCFLAGS = -std=c11 -O3
-LDFLAGS = -lrt
+CCFLAGS = -std=c11 -O3 -D_XOPEN_SOURCE=500
+LDFLAGS = -lrt -lpthread
 
 OBJS_DIR = .objs
 OBJS = shmemq.o main.o
