@@ -78,6 +78,9 @@ void shmemq_destroy(shmemq_t *this){
     if (this->data->references == 1){
         shm_unlink(this->name);
     }
+    else {
+        this->data->references -= 1;
+    }
 
     munmap(this->data, this->total_size);
 

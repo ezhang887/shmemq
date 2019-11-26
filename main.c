@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <assert.h>
+#include <sys/wait.h>
 
 static void push(int N){
     shmemq_t *q = shmemq_create("shmemq_test", N, sizeof(int));
@@ -17,10 +18,12 @@ static void push(int N){
 static void pull(int N){
     shmemq_t *q = shmemq_create("shmemq_test", N, sizeof(int));
 
-    for(int i=0; i<N; i++){
-        int a;
+    int i=0;
+    while(i < N){
+        int a = -1;
         if (shmemq_pull(q, &a) != -1){
             assert(a == i);
+            i++;
         }
     }
 
@@ -29,7 +32,7 @@ static void pull(int N){
 
 int main(int argc, char *argv[]){
 
-    int N = 100000000;
+    unsigned int N = 1000000;
     
     int child_pid = fork();
     if (child_pid == -1){
@@ -41,5 +44,12 @@ int main(int argc, char *argv[]){
     }
     else {
         pull(N);
+
+        int status;
+        waitpid(child_pid, &status, 0);
+        if (WIFEXITED(status) && WEXITSTATUS(status) != 0){
+            printf("Child process did not return with status code 0!");
+            return 2;
+        }
     }
 }
