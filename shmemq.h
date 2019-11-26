@@ -35,4 +35,7 @@ typedef struct _shmemq shmemq_t;
 shmemq_t *shmemq_create(char *name, size_t capacity, size_t element_size);
 void shmemq_destroy(shmemq_t *this);
 
+int shmemq_push(shmemq_t *this, void *buf);
+int shmemq_pull(shmemq_t *this, void *buf);
+
 #endif //SHMEMQ_H

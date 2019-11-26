@@ -11,7 +11,7 @@ OBJS_DIR = .objs
 OBJS = shmemq.o main.o
 TARGET = shmemq
 
-all: clean $(TARGET)
+all: $(TARGET)
 
 debug: clean $(TARGET)-debug
 

@@ -69,3 +69,33 @@ void shmemq_destroy(shmemq_t *this){
     free(this->name);
     free(this);
 }
+
+int shmemq_push(shmemq_t *this, void *buf){
+    pthread_mutex_lock(&this->data->mux);
+
+    if (this->data->write_pos - this->data->read_pos == this->total_size){
+        pthread_mutex_unlock(&this->data->mux);
+        return -1;
+    }
+
+    memmove(&this->data->data[this->data->write_pos], buf, this->element_size);
+    this->data->write_pos = (this->data->write_pos + this->element_size) % this->capacity;
+
+    pthread_mutex_unlock(&this->data->mux);
+    return 0;
+}
+
+int shmemq_pull(shmemq_t *this, void *buf){
+    pthread_mutex_lock(&this->data->mux);
+
+    if (this->data->read_pos == this->data->write_pos){
+        pthread_mutex_unlock(&this->data->mux);
+        return -1;
+    }
+
+    memmove(buf, &this->data->data[this->data->read_pos], this->element_size);
+    this->data->read_pos = (this->data->read_pos + this->element_size) % this->capacity;
+
+    pthread_mutex_unlock(&this->data->mux);
+    return 0;
+}
