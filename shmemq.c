@@ -40,6 +40,11 @@ shmemq_t *shmemq_create(char *name, size_t capacity, size_t element_size){
 
     rv->data = mmap(NULL, shmem_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
+    if (rv->data == MAP_FAILED){
+        perror("mmap(): ");
+        return NULL;
+    }
+
     if (!already_exists){
         rv->data->references = 1;
         rv->data->read_pos = 0;
