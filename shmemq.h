@@ -32,10 +32,27 @@ struct _shmemq {
 };
 typedef struct _shmemq shmemq_t;
 
+/*
+ * Creates a shmemq_t, with the given name, capacity, and element_size.
+ * Both capacity and element_size are rounded up to the nearest power of two.
+ */
 shmemq_t *shmemq_create(char *name, size_t capacity, size_t element_size);
+
+/*
+ * Frees the memory used by a shmemq_t.
+ */
 void shmemq_destroy(shmemq_t *this);
 
+/*
+ * Moves element_size bytes from buf to the queue if there is space.
+ * Returns -1 if the queue is full, and 0 on success.
+ */
 int shmemq_push(shmemq_t *this, void *buf);
+
+/*
+ * Moves element_size bytes from the queue to buf if the queue has elements.
+ * Returns -1 if the queue is empty, and 0 on success.
+ */
 int shmemq_pull(shmemq_t *this, void *buf);
 
 #endif //SHMEMQ_H
