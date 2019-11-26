@@ -5,7 +5,7 @@ CCFLAGS = -std=c11 -D_XOPEN_SOURCE=500
 CCFLAGS_DEBUG = $(CCFLAGS) -O0 -g
 CCFLAGS_OPT = $(CCFLAGS) -O3
 
-LDFLAGS = -lrt -lpthread
+LDFLAGS = -lrt -lpthread -lm
 
 OBJS_DIR = .objs
 OBJS = shmemq.o main.o

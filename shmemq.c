@@ -8,6 +8,16 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
+#include <math.h>
+
+size_t round_up(size_t v){
+    v--;
+    for(int i=0; i<sizeof(size_t); i++){
+        v |= v >> (size_t)pow(2, i);
+    }
+    v++;
+    return v;
+}
 
 shmemq_t *shmemq_create(char *name, size_t capacity, size_t element_size){
 
@@ -27,9 +37,9 @@ shmemq_t *shmemq_create(char *name, size_t capacity, size_t element_size){
     rv->fd = fd;
     rv->name = strdup(name);
 
-    rv->capacity = capacity;
-    rv->element_size = element_size;
-    rv->total_size = capacity * element_size;
+    rv->capacity = round_up(capacity);
+    rv->element_size = round_up(element_size);
+    rv->total_size = rv->capacity * rv->element_size;
 
     size_t shmem_size = rv->total_size + sizeof(shmemq_data_t);
 
@@ -78,13 +88,13 @@ void shmemq_destroy(shmemq_t *this){
 int shmemq_push(shmemq_t *this, void *buf){
     pthread_mutex_lock(&this->data->mux);
 
-    if (this->data->write_pos - this->data->read_pos == this->total_size){
+    if (this->data->write_pos - this->data->read_pos >= this->total_size){
         pthread_mutex_unlock(&this->data->mux);
         return -1;
     }
 
-    memmove(&this->data->data[this->data->write_pos], buf, this->element_size);
-    this->data->write_pos = (this->data->write_pos + this->element_size) % this->capacity;
+    memmove(&this->data->data[this->data->write_pos & (this->total_size - 1)], buf, this->element_size);
+    this->data->write_pos += this->element_size;
 
     pthread_mutex_unlock(&this->data->mux);
     return 0;
@@ -98,9 +108,9 @@ int shmemq_pull(shmemq_t *this, void *buf){
         return -1;
     }
 
-    memmove(buf, &this->data->data[this->data->read_pos], this->element_size);
-    this->data->read_pos = (this->data->read_pos + this->element_size) % this->capacity;
-
+    memmove(buf, &this->data->data[this->data->read_pos & (this->total_size - 1)], this->element_size);
+    this->data->read_pos += this->element_size;
+    
     pthread_mutex_unlock(&this->data->mux);
     return 0;
 }

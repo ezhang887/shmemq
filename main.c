@@ -3,18 +3,20 @@
 #include <stdio.h>
 
 int main(){
-    shmemq_t *q = shmemq_create("shmemq_test", 10, sizeof(int));
+    int N = 12;
+    shmemq_t *q = shmemq_create("shmemq_test", N, sizeof(int));
 
-    int a = 3256;
-    shmemq_push(q, &a);
-    a = 254;
-    shmemq_push(q, &a);
+    for(int i=0; i<3*N; i++){
+        int a = i;
+        shmemq_push(q, &a);
+    }
 
-    int b;
-    shmemq_pull(q, &b);
-    printf("b: %d\n", b);
-    shmemq_pull(q, &b);
-    printf("b: %d\n", b);
+    for(int i=0; i<3*N; i++){
+        int a;
+        if (shmemq_pull(q, &a) != -1){
+            printf("%d\n", a);
+        }
+    }
 
     shmemq_destroy(q);
 }
